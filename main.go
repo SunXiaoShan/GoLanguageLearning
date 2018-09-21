@@ -1,3 +1,4 @@
+// reference: https://ithelp.ithome.com.tw/users/20079210/ironman/721
 package main
 
 import (
@@ -14,7 +15,8 @@ func main() {
 		python11 bool
 		java11   bool
 	)
-	fmt.Println("preview", x11, y11, z11, c11, python11, java11)
+	var x111 int = 1
+	fmt.Println("preview", x11, y11, z11, c11, python11, java11, x111)
 
 	//
 	a := "Hello World"
@@ -82,14 +84,65 @@ func main() {
 	k1, k2 := getMultiValues(1, 3)
 	fmt.Println("k => k1:", k1, " k2:", k2)
 
+	//
 	go funcForDemoGorountine(3)
 	time.Sleep(time.Second * 1) // 暫停一秒鐘
 
+	//
 	messages := make(chan string)
 	go func() { messages <- "ping" }()
 	msg := <-messages
 	fmt.Println("l => ", msg)
 
+	//
+	c1 := make(chan string)
+	c2 := make(chan string)
+	go func() {
+		time.Sleep(time.Second * 1)
+		c1 <- "one"
+	}()
+	go func() {
+		time.Sleep(time.Second * 1)
+		c2 <- "two"
+	}()
+
+	// fatal error: all goroutines are asleep - deadlock!
+	fmt.Println("m => ", "log start")
+	for i := 0; i < 2; i++ {
+		select {
+		case msg1 := <-c1:
+			fmt.Println("m => ", "received", msg1)
+		case msg2 := <-c2:
+			fmt.Println("m => ", "received", msg2)
+		}
+	}
+	fmt.Println("m => ", "log end")
+
+	//
+	o := 5
+	zero(&o)
+	fmt.Println("o => ", o) // x is 0
+	xPtr := new(int)
+	zero(xPtr)
+	fmt.Println("o => ", *xPtr) // x is 0
+
+	//
+	fmt.Println("p => ", person{"Bob", 20})
+	p1 := person{name: "hello", age: 10}
+	fmt.Println("p => ", p1.name)
+	p11 := &p1
+	p11.name = "world"
+	fmt.Println("p => p1:", p1.name, " p11:", p11.name)
+
+	// try catch finally
+	defer func() {
+		fmt.Println("n => ", "first")
+		if err := recover(); err != nil {
+			fmt.Println("n => error: ", err)
+		}
+		fmt.Println("n => ", "end")
+	}()
+	f2()
 }
 
 func choose(i int) {
@@ -113,4 +166,25 @@ func funcForDemoGorountine(n int) {
 	for i := 0; i < 10; i++ {
 		fmt.Println("Gorountine => ", n, ":", i)
 	}
+}
+
+func f2() {
+	fmt.Println("test")
+	panic(1)
+	fmt.Println("test2")
+}
+
+func zero(xPtr *int) {
+	*xPtr = 0
+}
+
+type person struct {
+	name string
+	age  int
+}
+
+//TODO: https://ithelp.ithome.com.tw/articles/10157742
+type Card interface {
+	id() int
+	name() string
 }
